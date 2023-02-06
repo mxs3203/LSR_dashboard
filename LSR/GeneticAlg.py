@@ -3,6 +3,8 @@ import os
 import time
 
 import numpy as np
+from matplotlib import pyplot as plt
+plt.switch_backend('Agg')
 from pygad import pygad
 
 from LSR.LSR_comm import LSR_comm
@@ -12,18 +14,25 @@ from LSR.SpectraWizSaver import save_curve
 from LSR.utils import scale_curve, readAndCurateCurve, generate_random
 
 def on_generation(ga_instance):
+    with open('tmp/solution_curve.json') as json_file:
+        recon_curve = json.load(json_file)
+        json_file.close()
+    ref_curve, _ = readAndCurateCurve("tmp/ref.IRR")
+    print(recon_curve)
     print("\t\tGeneration : ", ga_instance.generations_completed)
     print("\t\tFitness of the best solution :", ga_instance.best_solution()[1])
     print("\t\tTen Nums:", ga_instance.best_solution()[0])
     solution_json = {"generation": ga_instance.generations_completed,
                      "fitness": ga_instance.best_solution()[1],
-                     "solution": ga_instance.best_solution()[0].tolist()
+                     "solution": ga_instance.best_solution()[0].tolist(),
+                     "reconstruced_curve": recon_curve,
+                     "ref_curve": ref_curve['value'].values.tolist(),
+                     "nm": ref_curve['nm'].values.tolist()
                      }
     solution_json = json.dumps(solution_json)
-    print(solution_json)
     with open("tmp/solution.json", "w") as outfile:
         outfile.write(solution_json)
-
+        outfile.close()
     time.sleep(3)
 
 
@@ -74,7 +83,13 @@ class GeneticAlg:
 
 
 def fitness_func_offline(solution, soulution_idx):
-    sensor_reading = np.random.randint(500, size=161)
+    sensor_reading = np.random.randint(120, size=161)
+    sensor_reading_json = sensor_reading.tolist()
+    sensor_reading_json = json.dumps(sensor_reading_json)
+    with open("tmp/solution_curve.json", "w") as outfile:
+        outfile.write(sensor_reading_json)
+        outfile.close()
+
     desired_output, _ = readAndCurateCurve("tmp/ref.IRR")
     mse = (np.abs(scale_curve(desired_output['value'].values) - scale_curve(sensor_reading))).mean(axis=0)
     print("MSE= ", mse)

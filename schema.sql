@@ -6,6 +6,5 @@ CREATE TABLE lsr_data (
     temp TEXT NOT NULL,
     name TEXT NOT NULL,
     input_curve TEXT NOT NULL,
-    reconstructed_curve TEXT NOT NULL,
     lsr_params TEXT NOT NULL
 );

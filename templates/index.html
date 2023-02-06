@@ -124,10 +124,10 @@
 
                             <div class="col-12 col-lg-6 col-xl-3 border-light">
                                 <div class="card-body">
-                                    <h5 class="text-white mb-0">Abort LSR Process </h5>
-                                    <div class="icon col-sm-12" data-code="f118" data-name="block-alt">
-                                        <a href="javascript:void();" id="abortLSR"><i class="zmdi zmdi-block-alt"></i>
-                                            <span style="color:red; font-size:1em;">Abort LSR Process</span></a>
+                                    <h5 class="text-white mb-0">LSR Process </h5>
+                                    <div class="col-sm-12">
+                                        <div class="loader centerText"></div>
+                                        <div class="loaderText centerText">Working...</div>
                                     </div>
                                 </div>
 
@@ -144,12 +144,14 @@
                             <div class="card-header">Reference and Reconstructed Curves</div>
                             <div class="card-body">
                                 <ul class="list-inline">
-                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-white"></i>Reference
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Reference
                                         Curve
                                     </li>
-                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Reconstructed
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-red"></i>Reconstructed
                                         Curve
                                     </li>
+                                    <li class="list-inline-item">Fitness: <span id="fitness_val"></span></li>
+                                    <li class="list-inline-item">Generation: <span id="generation_val"></span></li>
                                 </ul>
                                 <div class="chart-container-1">
                                     <canvas id="chart1"></canvas>
@@ -175,8 +177,8 @@
                             <div class="card-header">Temperature</div>
                             <div class="card-body">
                                 <h1 class="card-title text-uppercase text-center" style="font-size: 5em;">
-                                    <input readonly type="text" name="temp" value="{{ request.form['temp'] }}"
-                                           class="my_form form-control input-shadow" placeholder="24 &#8451">
+                                    <input readonly type="text" name="current_temp" value="{{ request.form['current_temp'] }}"
+                                           class="my_form2 form-control input-shadow" placeholder="...">
                                 </h1>
                             </div>
                         </div>
@@ -208,7 +210,6 @@
                                     <th>Figure</th>
                                     <th>Temperature</th>
                                     <th>Input Ref. Curve</th>
-                                    <th>Output Reconstructed Curve</th>
                                     <th>LSR Params</th>
                                     <th>Date/Time</th>
                                 </tr>
@@ -218,11 +219,9 @@
 
                                 <tr>
                                     <td>{{ l_d['name'] }}</td>
-                                    <td><img src="https://via.placeholder.com/110x110" class="product-img"
-                                             alt="product img"></td>
+                                    <td><img src="https://via.placeholder.com/110x110" class="product-img" alt="product img"></td>
                                     <td>{{ l_d['temp'] }}</td>
                                     <td>{{ l_d['input_curve'] }}</td>
-                                    <td>{{ l_d['reconstructed_curve'] }}</td>
                                     <td><span class="badge badge-secondary">{{ l_d['lsr_params'] }}</span></td>
                                     <td><span class="badge badge-primary">{{ l_d['created'] }}</span></td>
                                 </tr>

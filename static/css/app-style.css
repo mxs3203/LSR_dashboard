@@ -80,7 +80,7 @@ select option {
 
 
 .my_form2,.my_form2::placeholder {
-    font: 40px sans-serif;
+    font: 30px sans-serif;
     text-align: center;
 }
 
@@ -2983,6 +2983,32 @@ table.grid td {
 }
 .text-light {
     color: rgba(255,255,255,.125)!important;
+}
+
+.text-red {
+    color: rgba(255,20,20,.625)!important;
+}
+
+.centerText{
+    text-align:center
+  }
+
+.loader {
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display:none;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .text-light-1 {

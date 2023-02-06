@@ -1,6 +1,6 @@
 import json
 import os
-
+import matplotlib.pyplot as plt
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 import sqlite3
 
@@ -34,15 +34,15 @@ def create():
     if request.method == 'POST':
 
         name = request.form['name']
-        temp = request.form['temp']
+        temp = request.form['current_temp']
         ref_curve = request.form['ref_curve']
-        recon_curve = "smthging"#request.form['recon_curve']
         lsr_params = request.form['lsr_params']
+        print(name, temp, ref_curve, lsr_params)
 
 
         conn = get_db_connection()
-        conn.execute("INSERT INTO lsr_data (name, temp, input_curve, reconstructed_curve,lsr_params) VALUES (?, ? ,?, ?, ?)",
-                (name,temp, ref_curve, recon_curve, lsr_params)
+        conn.execute("INSERT INTO lsr_data (name, temp, input_curve,lsr_params) VALUES (?, ?, ?, ?)",
+                (name,temp, ref_curve, lsr_params)
                      )
         conn.commit()
         conn.close()
@@ -79,7 +79,6 @@ def abort_lsr():
 
 @app.route('/findCurve',methods=['POST'])
 def findCurve():
-    os.remove("tmp/solution.json")
     if request.method == 'POST':
         f = request.files['file']
         f.save("tmp/ref.IRR")
@@ -100,6 +99,10 @@ def get_current_solution():
     if request.method == 'GET' and os.path.isfile("tmp/solution.json"):
         f = open('tmp/solution.json')
         data = json.load(f)
+
+        lsr = FakeLSR_comm()
+        lsr.ask_for_status()
+        data["temp"] = lsr.temp
         return data
     else:
         return "{\"response\": \"Fail\"}"

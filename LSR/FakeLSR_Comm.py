@@ -1,3 +1,4 @@
+import random
 import time
 
 
@@ -6,6 +7,7 @@ class FakeLSR_comm:
     def __init__(self):
         self.columns_with_data = []
         self.column_1 = []
+        self.temp = -1
         time.sleep(0.5)
 
     def send_any_command(self, msg):
@@ -16,6 +18,7 @@ class FakeLSR_comm:
 
     def ask_for_status(self):
         msg = "{\"DO\":\"status\"}"
+        self.temp = random.randint(20,28)
         self.send_any_command(msg)
 
     def set_column_data(self, column, list_of_nums, coef=1):
