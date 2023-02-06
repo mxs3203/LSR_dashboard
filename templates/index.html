@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Mateo Sokac"/>
+    <title>LSR Dashboard</title>
+    <!-- loader assets/css/pace.min.css  -->
+    <link href="{{ url_for('static', filename= 'css/pace.min.css') }}" rel="stylesheet"/>
+    <script src="{{ url_for('static', filename= 'js/pace.min.js') }}"></script>
+    <!--favicon-->
+    <link rel="icon" href="{{ url_for('static', filename= 'images/favicon.ico') }}" type="image/x-icon">
+    <!-- simplebar CSS-->
+    <link href="{{ url_for('static', filename= 'plugins/simplebar/css/simplebar.css') }}" rel="stylesheet"/>
+    <!-- Bootstrap core CSS-->
+    <link href="{{ url_for('static', filename= 'css/bootstrap.min.css') }}" rel="stylesheet"/>
+    <!-- animate CSS-->
+    <link href="{{ url_for('static', filename= 'css/animate.css') }}" rel="stylesheet" type="text/css"/>
+    <!-- Icons CSS-->
+    <link href="{{ url_for('static', filename= 'css/icons.css') }}" rel="stylesheet" type="text/css"/>
+    <!-- Sidebar CSS-->
+    <link href="{{ url_for('static', filename= 'css/sidebar-menu.css') }}" rel="stylesheet"/>
+    <!-- Custom Style-->
+    <link href="{{ url_for('static', filename= 'css/app-style.css') }}" rel="stylesheet"/>
+
+
+</head>
+
+<body class="bg-theme bg-theme1">
+
+<!-- Start wrapper-->
+<div id="wrapper">
+
+    <!--Start sidebar-wrapper-->
+    <div id="sidebar-wrapper" data-simplebar="" data-simplebar-auto-hide="true">
+        <div class="brand-logo">
+            <a href="index.html">
+                <img src="{{ url_for('static', filename= 'images/logo-icon.png') }}" class="logo-icon" alt="logo icon">
+                <h5 class="logo-text">LSR Control Board</h5>
+            </a>
+        </div>
+        <ul class="sidebar-menu do-nicescrol">
+            <li class="sidebar-header">MAIN NAVIGATION</li>
+            <li>
+                <a href="/">
+                    <i class="zmdi zmdi-view-dashboard"></i> <span>Dashboard</span>
+                </a>
+            </li>
+
+
+            <li>
+                <a href="tables">
+                    <i class="zmdi zmdi-grid"></i> <span>Data</span>
+                </a>
+            </li>
+
+        </ul>
+
+    </div>
+    <!--End sidebar-wrapper-->
+
+    <!--Start topbar header-->
+    <header class="topbar-nav">
+        <nav class="navbar navbar-expand fixed-top">
+            <ul class="navbar-nav mr-auto align-items-center">
+            </ul>
+            <ul class="navbar-nav align-items-center right-nav-link">
+            </ul>
+        </nav>
+    </header>
+    <!--End topbar header-->
+
+    <div class="clearfix"></div>
+
+    <div class="content-wrapper">
+        <div class="container-fluid">
+
+            <!--Start Dashboard Content-->
+            <form method="POST" action="create">
+
+                <div class="card mt-3">
+                    <div class="card-content">
+                        <div class="row row-group m-0">
+                            <div class="col-12 col-lg-6 col-xl-3 border-light">
+                                <div class="card-body">
+                                    <h5 class="text-white mb-0">Reference Curve</h5>
+                                    <input type="file" id="refCurveFile" name="ref_curve" accept="txt/txt">
+                                    <button type="button" id="findCurve" class="btn btn-light btn-block">Find Curve
+                                    </button>
+                                </div>
+                            </div>
+
+
+                            <div class="col-12 col-lg-6 col-xl-3 border-light">
+                                <div class="card-body">
+                                    <h5 class="text-white mb-0">Temperature</h5>
+
+                                    <input type="number" name="wanted_temp" id="temperature"
+                                           class="form-control input-shadow" placeholder="Enter Desired Temperature">
+                                    <button type="button" class="btn btn-light btn-block" id="setTemp">Set Temperature
+                                    </button>
+
+                                </div>
+                            </div>
+
+
+                            <div class="col-12 col-lg-6 col-xl-3 border-light">
+                                <div class="card-body">
+                                    <h5 class="text-white mb-0">Connection Status </h5>
+                                    <div class="col-lg-6 col-xl-6 icon">
+                                        <a data-code="f3ea" data-name="rss" href="javascript:void();"><i
+                                                class="zmdi zmdi-rss"></i> <span
+                                                style="color:green;">Connected</span></a>
+                                    </div>
+                                    <div class="col-lg-6 col-xl-6 icon" data-code="f118" data-name="block-alt">
+                                        <a href="javascript:void();"><i class="zmdi zmdi-block-alt"></i> <span
+                                                style="color:red;">Disconnected</span></a>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-lg-6 col-xl-3 border-light">
+                                <div class="card-body">
+                                    <h5 class="text-white mb-0">Abort LSR Process </h5>
+                                    <div class="icon col-sm-12" data-code="f118" data-name="block-alt">
+                                        <a href="javascript:void();" id="abortLSR"><i class="zmdi zmdi-block-alt"></i>
+                                            <span style="color:red; font-size:1em;">Abort LSR Process</span></a>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-8 col-xl-8">
+                        <div class="card">
+                            <div class="card-header">Reference and Reconstructed Curves</div>
+                            <div class="card-body">
+                                <ul class="list-inline">
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-white"></i>Reference
+                                        Curve
+                                    </li>
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Reconstructed
+                                        Curve
+                                    </li>
+                                </ul>
+                                <div class="chart-container-1">
+                                    <canvas id="chart1"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="row m-0 row-group text-center border-top border-light-3">
+                                <div class="col-12 col-lg-12">
+                                    <div class="p-3">
+                                        <h5 class="mb-0">LSR Parameters</h5>
+                                        <input readonly type="text"  name="lsr_params"
+                                               value="{{ request.form['lsr_params'] }}"
+                                               class="my_form2 form-control input-shadow"
+                                               placeholder="LSR Params. Will be shown here...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-4 col-xl-4 row-12">
+                        <div class="card" style="margin-bottom: 14.5%;">
+                            <div class="card-header">Temperature</div>
+                            <div class="card-body">
+                                <h1 class="card-title text-uppercase text-center" style="font-size: 5em;">
+                                    <input readonly type="text" name="temp" value="{{ request.form['temp'] }}"
+                                           class="my_form form-control input-shadow" placeholder="24 &#8451">
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">Saving Experiment</div>
+                            <div class="card-body">
+                                <input type="text" name="name" value="{{ request.form['name'] }}" id="save"
+                                       class="form-control input-shadow" placeholder="Enter Experiment Name">
+                                <button type="submit" class="btn btn-light btn-block">Save</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div><!--End Row-->
+
+            </form>
+            <div class="row">
+                <div class="col-12 col-lg-12">
+                    <div class="card">
+                        <div class="card-header">Recent Experiments
+
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-items-center table-flush table-borderless">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Figure</th>
+                                    <th>Temperature</th>
+                                    <th>Input Ref. Curve</th>
+                                    <th>Output Reconstructed Curve</th>
+                                    <th>LSR Params</th>
+                                    <th>Date/Time</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for l_d in lsr_data %}
+
+                                <tr>
+                                    <td>{{ l_d['name'] }}</td>
+                                    <td><img src="https://via.placeholder.com/110x110" class="product-img"
+                                             alt="product img"></td>
+                                    <td>{{ l_d['temp'] }}</td>
+                                    <td>{{ l_d['input_curve'] }}</td>
+                                    <td>{{ l_d['reconstructed_curve'] }}</td>
+                                    <td><span class="badge badge-secondary">{{ l_d['lsr_params'] }}</span></td>
+                                    <td><span class="badge badge-primary">{{ l_d['created'] }}</span></td>
+                                </tr>
+
+                                {% endfor %}
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div><!--End Row-->
+
+            <!--End Dashboard Content-->
+
+            <!--start overlay-->
+            <div class="overlay toggle-menu"></div>
+            <!--end overlay-->
+
+        </div>
+        <!-- End container-fluid-->
+
+    </div><!--End content-wrapper-->
+    <!--Start Back To Top Button-->
+    <a href="javaScript:void();" class="back-to-top"><i class="fa fa-angle-double-up"></i> </a>
+    <!--End Back To Top Button-->
+
+    <!--Start footer-->
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                Copyright © 2022 Mateo Sokac & Gea275
+            </div>
+        </div>
+    </footer>
+    <!--End footer-->
+
+</div><!--End wrapper-->
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{ url_for('static', filename= 'js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename= 'js/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename= 'js/bootstrap.min.js') }}"></script>
+
+
+<!-- simplebar js -->
+<script src="{{ url_for('static', filename= 'plugins/simplebar/js/simplebar.js') }}"></script>
+<!-- sidebar-menu js -->
+<script src="{{ url_for('static', filename= 'js/sidebar-menu.js') }}"></script>
+<!-- Custom scripts -->
+<script src="{{ url_for('static', filename= 'js/app-script.js') }}"></script>
+<!-- Chart js -->
+
+<script src="{{ url_for('static', filename= 'plugins/Chart.js/Chart.min.js') }}"></script>
+
+<!-- Index js -->
+<script src="{{ url_for('static', filename= 'js/index.js') }}"></script>
+
+
+</body>
+</html>
