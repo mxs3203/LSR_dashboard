@@ -1,5 +1,8 @@
 import json
 import os
+import re
+import shutil
+
 import matplotlib.pyplot as plt
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 import sqlite3
@@ -10,9 +13,8 @@ from LSR.FakeLSR_Comm import FakeLSR_comm
 from LSR.GeneticAlg import GeneticAlg
 from LSR.utils import readAndCurateCurve, findLSRTenNumberRange, computeRange
 
-app = Flask(__name__)
 
-ga_instance = None
+app = Flask(__name__)
 
 @app.route('/')
 def dashboard():
@@ -28,6 +30,13 @@ def tables():
     conn.close()
     return render_template('tables.html', lsr_data=lsr_data)
 
+@app.route('/figure')
+def figure():
+    if request.method == 'GET':
+        figurePath = request.args.get('figure')
+        return render_template('figure.html', figurePath=figurePath)
+    else:
+        return "{\"response\": \"Fail\"}"
 @app.route('/create', methods=('GET', 'POST'))
 def create():
 
@@ -37,20 +46,44 @@ def create():
         temp = request.form['current_temp']
         ref_curve = request.form['ref_curve']
         lsr_params = request.form['lsr_params']
-        print(name, temp, ref_curve, lsr_params)
-
-
+        f = open('tmp/solution.json')
+        data = json.load(f)
+        fitness = data['fitness']
+        mse = 1.0/fitness
+        new_figure_name = "static/Figures/{}.png".format(checkNameForFigure())
+        shutil.move("tmp/fig.png", new_figure_name)
         conn = get_db_connection()
-        conn.execute("INSERT INTO lsr_data (name, temp, input_curve,lsr_params) VALUES (?, ?, ?, ?)",
-                (name,temp, ref_curve, lsr_params)
+        conn.execute("INSERT INTO lsr_data (name, temp, input_curve,lsr_params,mse,figure_path) VALUES (?, ?, ?, ?, ?, ?)",
+                (name,temp, ref_curve, lsr_params, mse, new_figure_name)
                      )
         conn.commit()
         conn.close()
+        clearTmp()
         return redirect('/')
     else:
 
         return redirect('/')
 
+def checkNameForFigure():
+    figures = os.listdir("static/Figures")
+    print(figures)
+    if len(figures) == 0:
+        return 1
+    else:
+        return extract_number(figures)
+def extract_number(figures):
+    return max([int(f.split(".")[0]) for f in figures]) + 1
+
+
+def clearTmp():
+    if os.path.isfile("tmp/solution.json"):
+        os.remove("tmp/solution.json")
+    if os.path.isfile("tmp/solution_curve.json"):
+        os.remove("tmp/solution_curve.json")
+    if os.path.isfile("tmp/ref.IRR"):
+        os.remove("tmp/ref.IRR")
+    if os.path.isfile("tmp/fig.png"):
+        os.remove("tmp/fig.png")
 @app.route('/set_lsr_temp')
 def set_lsr_temp():
     if request.method == 'GET':

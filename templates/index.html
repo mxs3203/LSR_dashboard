@@ -109,12 +109,13 @@
                             <div class="col-12 col-lg-6 col-xl-3 border-light">
                                 <div class="card-body">
                                     <h5 class="text-white mb-0">Connection Status </h5>
-                                    <div class="col-lg-6 col-xl-6 icon" id="connected" >
+                                    <div class="col-lg-12 col-xl-12 icon" id="connected">
                                         <a data-code="f3ea" href="javascript:void();"><i
                                                 class="zmdi zmdi-rss"></i> <span
                                                 style="color:green;">Connected</span></a>
                                     </div>
-                                    <div class="col-lg-6 col-xl-6 icon" id="disconnected" data-code="f118" data-name="block-alt">
+                                    <div class="col-lg-12 col-xl-12 icon" id="disconnected" data-code="f118"
+                                         data-name="block-alt">
                                         <a href="javascript:void();"><i class="zmdi zmdi-block-alt"></i> <span
                                                 style="color:red;">Disconnected</span></a>
                                     </div>
@@ -126,8 +127,9 @@
                                 <div class="card-body">
                                     <h5 class="text-white mb-0">LSR Process </h5>
                                     <div class="col-sm-12">
-                                        <div class="loader centerText"></div>
-                                        <div class="loaderText centerText">Working...</div>
+                                        <div id="Progress">
+                                            <div id="progressBar">1%</div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -142,11 +144,15 @@
                     <div class="col-12 col-lg-8 col-xl-8">
                         <div class="card">
                             <div class="card-header">Reference and Reconstructed Curves</div>
+                            <div class="loader centerText"></div>
+                            <div class="loaderText centerText">Working...</div>
                             <div class="card-body">
                                 <ul class="list-inline">
 
-                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Fitness: <span id="fitness_val"></span></li>
-                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Generation: <span id="generation_val"></span></li>
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Fitness:
+                                        <span id="fitness_val"></span></li>
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Generation:
+                                        <span id="generation_val"></span></li>
                                 </ul>
                                 <div class="chart-container-1">
                                     <canvas id="chart1"></canvas>
@@ -157,7 +163,7 @@
                                 <div class="col-12 col-lg-12">
                                     <div class="p-3">
                                         <h5 class="mb-0">LSR Parameters</h5>
-                                        <input readonly type="text"  name="lsr_params"
+                                        <input readonly type="text" name="lsr_params"
                                                value="{{ request.form['lsr_params'] }}"
                                                class="my_form2 form-control input-shadow"
                                                placeholder="LSR Params. Will be shown here...">
@@ -172,7 +178,8 @@
                             <div class="card-header">Temperature</div>
                             <div class="card-body">
                                 <h1 class="card-title text-uppercase text-center" style="font-size: 5em;">
-                                    <input readonly type="text" name="current_temp" value="{{ request.form['current_temp'] }}"
+                                    <input readonly type="text" name="current_temp"
+                                           value="{{ request.form['current_temp'] }}"
                                            class="my_form2 form-control input-shadow" placeholder="...">
                                 </h1>
                             </div>
@@ -182,7 +189,7 @@
                             <div class="card-body">
                                 <input type="text" name="name" value="{{ request.form['name'] }}" id="save"
                                        class="form-control input-shadow" placeholder="Enter Experiment Name">
-                                <button type="submit" class="btn btn-light btn-block">Save</button>
+                                <button type="submit" class="btn btn-light btn-block" id="saveExperiment">Save</button>
                             </div>
                         </div>
                     </div>
@@ -205,6 +212,8 @@
                                     <th>Figure</th>
                                     <th>Temperature</th>
                                     <th>Input Ref. Curve</th>
+                                    <th>MSE</th>
+                                    <th>Fitness</th>
                                     <th>LSR Params</th>
                                     <th>Date/Time</th>
                                 </tr>
@@ -214,10 +223,13 @@
 
                                 <tr>
                                     <td>{{ l_d['name'] }}</td>
-                                    <td><img src="https://via.placeholder.com/110x110" class="product-img" alt="product img"></td>
+                                    <td><a data-code="f3ea"><i class="icon zmdi zmdi-book-image"></i> <span
+                                            onclick="openFigure(this)">{{ l_d['figure_path'] }}</span></a></td>
                                     <td>{{ l_d['temp'] }}</td>
                                     <td>{{ l_d['input_curve'] }}</td>
-                                    <td><span class="badge badge-secondary">{{ l_d['lsr_params'] }}</span></td>
+                                    <td>{{ l_d['mse'] }}</td>
+                                    <td>{{ 1.0/l_d['mse'] }}</td>
+                                    <td>{{ l_d['lsr_params'] }}</td>
                                     <td><span class="badge badge-primary">{{ l_d['created'] }}</span></td>
                                 </tr>
 

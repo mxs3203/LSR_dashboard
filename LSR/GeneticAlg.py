@@ -13,15 +13,24 @@ from LSR.SpectraWizSaver import save_curve
 #from LSR.SpectraWizSaver import save_curve
 from LSR.utils import scale_curve, readAndCurateCurve, generate_random
 
+
+def make_plot(fitness, ten_nums, recon_curve, ref_curve, nm):
+    plt.plot(nm, recon_curve)
+    plt.plot(nm, ref_curve)
+    plt.legend(['Recreated by {} gen'.format(10), 'Ref Curve'])
+    plt.title("_".join(str(e) for e in ten_nums))
+    plt.savefig("tmp/fig.png", transparent=True)
+
+
 def on_generation(ga_instance):
     with open('tmp/solution_curve.json') as json_file:
         recon_curve = json.load(json_file)
         json_file.close()
     ref_curve, _ = readAndCurateCurve("tmp/ref.IRR")
-    print(recon_curve)
-    print("\t\tGeneration : ", ga_instance.generations_completed)
-    print("\t\tFitness of the best solution :", ga_instance.best_solution()[1])
-    print("\t\tTen Nums:", ga_instance.best_solution()[0])
+    # print(recon_curve)
+    # print("\t\tGeneration : ", ga_instance.generations_completed)
+    # print("\t\tFitness of the best solution :", ga_instance.best_solution()[1])
+    # print("\t\tTen Nums:", ga_instance.best_solution()[0])
     solution_json = {"generation": ga_instance.generations_completed,
                      "fitness": ga_instance.best_solution()[1],
                      "solution": ga_instance.best_solution()[0].tolist(),
@@ -33,7 +42,10 @@ def on_generation(ga_instance):
     with open("tmp/solution.json", "w") as outfile:
         outfile.write(solution_json)
         outfile.close()
-    time.sleep(3)
+
+    if ga_instance.generations_completed == 10:
+        make_plot(ga_instance.best_solution()[1], ga_instance.best_solution()[0], recon_curve, ref_curve['value'].values.tolist(), ref_curve['nm'].values.tolist())
+    time.sleep(1)
 
 
 class GeneticAlg:

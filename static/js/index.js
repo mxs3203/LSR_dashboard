@@ -3,11 +3,37 @@ var not_done = true;
 var nm = null;
 var recon_curve = null;
 var ref_curve = null;
+var MAX_GEN = 10;
 $('.loader').hide();
 $('.loaderText').hide();
+$('#progressBar').hide();
 $('#connected').hide();
 $('#disconnected').show();
+$('#saveExperiment').prop('disabled', true);
 getStatus();
+
+function progress(how_much) {
+    var elem = document.getElementById("progressBar");
+    var width = 1;
+    var id = setInterval(frame, 1);
+    function frame() {
+      if (width >= how_much) {
+        clearInterval(id);
+      } else {
+        if (width <= 100){
+            width++;
+            elem.style.width = width + "%";
+            elem.innerHTML = width  + "%";
+        }
+      }
+    }
+
+}
+
+function openFigure(element){
+    console.log(element.innerHTML)
+    location.href = '/figure?figure='+element.innerHTML.split("static/Figures/")[1];
+}
 
 function getStatus(){
 
@@ -65,9 +91,10 @@ $( "#findCurve" ).click(function() {
             $(':button').prop('disabled', true);
             $('.loader').show();
             $('.loaderText').show();
+            $('#progressBar').show();
             setTimeout(function() {
                 get_ga_results();
-            }, 1000);
+            }, 3000);
 
             $.ajax({
                 url: "/findCurve",
@@ -84,6 +111,7 @@ $( "#findCurve" ).click(function() {
                     $('.loader').hide();
                     $('.loaderText').hide();
                     $(':button').prop('disabled', false);
+                    $('#progressBar').hide();
                 },
                 error: function () {
                     console.log("Something went wrong");
@@ -112,6 +140,7 @@ function get_ga_results(){
         $('#generation_val').text(data['generation']);
         $('input[name=current_temp]').val(data['temp'] + "℃");
         makeplots();
+        progress((data['generation']/MAX_GEN * 100));
       },
       complete:function(data){
        if (not_done){
@@ -202,4 +231,6 @@ function makeplots() {
 			 }
 			});
 }
+
+
 

@@ -2998,10 +2998,10 @@ table.grid td {
   margin-left: auto;
   margin-right: auto;
   border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #3498db; /* Blue */
+  border-top: 16px solid rgba(10, 80, 180, 0.55); /* Blue */
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 30px;
+  height: 30px;
   display:none;
   animation: spin 2s linear infinite;
 }
@@ -3423,6 +3423,23 @@ table.grid td {
 	 position:relative;
 	 height:188px;
  }
+
+#Progress {
+  margin-top: 10px;
+  width: 100%;
+  background-color: black;
+  margin-left:auto;
+  margin-right: auto;
+}
+
+#progressBar {
+  width: 1%;
+  height: 40px;
+  background-color: rgba(10, 80, 180, 0.55);
+  text-align: center;
+  line-height: 40px;
+  color: white;
+}
  
  .chart-container-3{
 	 position:relative;

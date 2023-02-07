@@ -6,5 +6,7 @@ CREATE TABLE lsr_data (
     temp TEXT NOT NULL,
     name TEXT NOT NULL,
     input_curve TEXT NOT NULL,
-    lsr_params TEXT NOT NULL
+    lsr_params TEXT NOT NULL,
+    mse NUMERIC NOT NULL,
+    figure_path TEXT NOT NULL
 );
