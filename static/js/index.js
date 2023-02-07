@@ -5,19 +5,44 @@ var recon_curve = null;
 var ref_curve = null;
 $('.loader').hide();
 $('.loaderText').hide();
+$('#connected').hide();
+$('#disconnected').show();
+getStatus();
+
+function getStatus(){
+
+    $.ajax({
+          url: '/get_status',
+          type: 'GET',
+          async: false,
+          success: function(data){
+            data = $.parseJSON(JSON.stringify(data));
+            console.log(data)
+            if(data['connected']){
+                $('#connected').show();
+                $('#disconnected').hide();
+                $('input[name=current_temp]').val(data['temp'] + "℃");
+            }
+          },
+          complete:function(data){
+            setTimeout(getStatus,4000);
+
+          }
+         });
+}
+
+
 
 $("#refCurveFile").on('input', function() {
    refCurveFile = this.files[0];
 });
-
-
 
 $( "#setTemp" ).click(function() {
  var temp = $("#temperature").val();
  $.ajax({
         url: "/set_lsr_temp",
         data: {task:"temp",value:temp},
-        async: true,
+        async: false,
         type: "GET",
         dataType: "json",
         success: function (data) {
@@ -31,13 +56,15 @@ $( "#setTemp" ).click(function() {
 
 
 $( "#findCurve" ).click(function() {
-        $(':button').prop('disabled', true);
+
         not_done = true
         var formData = new FormData();
         formData.append('file',refCurveFile)
-        $('.loader').show();
-        $('.loaderText').show();
+
         if(refCurveFile != null){
+            $(':button').prop('disabled', true);
+            $('.loader').show();
+            $('.loaderText').show();
             setTimeout(function() {
                 get_ga_results();
             }, 1000);
@@ -83,7 +110,7 @@ function get_ga_results(){
         nm = data['nm'];
         $('#fitness_val').text(data['fitness'].toFixed(4));
         $('#generation_val').text(data['generation']);
-        $('input[name=current_temp]').val(data['temp']);
+        $('input[name=current_temp]').val(data['temp'] + "℃");
         makeplots();
       },
       complete:function(data){
@@ -140,7 +167,7 @@ function makeplots() {
 			options: {
 				maintainAspectRatio: false,
 				legend: {
-				  display: false,
+				  display: true,
 				  labels: {
 					fontColor: '#ddd',  
 					boxWidth:40

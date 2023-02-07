@@ -109,12 +109,12 @@
                             <div class="col-12 col-lg-6 col-xl-3 border-light">
                                 <div class="card-body">
                                     <h5 class="text-white mb-0">Connection Status </h5>
-                                    <div class="col-lg-6 col-xl-6 icon">
-                                        <a data-code="f3ea" data-name="rss" href="javascript:void();"><i
+                                    <div class="col-lg-6 col-xl-6 icon" id="connected" >
+                                        <a data-code="f3ea" href="javascript:void();"><i
                                                 class="zmdi zmdi-rss"></i> <span
                                                 style="color:green;">Connected</span></a>
                                     </div>
-                                    <div class="col-lg-6 col-xl-6 icon" data-code="f118" data-name="block-alt">
+                                    <div class="col-lg-6 col-xl-6 icon" id="disconnected" data-code="f118" data-name="block-alt">
                                         <a href="javascript:void();"><i class="zmdi zmdi-block-alt"></i> <span
                                                 style="color:red;">Disconnected</span></a>
                                     </div>
@@ -144,14 +144,9 @@
                             <div class="card-header">Reference and Reconstructed Curves</div>
                             <div class="card-body">
                                 <ul class="list-inline">
-                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Reference
-                                        Curve
-                                    </li>
-                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-red"></i>Reconstructed
-                                        Curve
-                                    </li>
-                                    <li class="list-inline-item">Fitness: <span id="fitness_val"></span></li>
-                                    <li class="list-inline-item">Generation: <span id="generation_val"></span></li>
+
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Fitness: <span id="fitness_val"></span></li>
+                                    <li class="list-inline-item"><i class="fa fa-circle mr-2 text-light"></i>Generation: <span id="generation_val"></span></li>
                                 </ul>
                                 <div class="chart-container-1">
                                     <canvas id="chart1"></canvas>

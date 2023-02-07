@@ -107,6 +107,18 @@ def get_current_solution():
     else:
         return "{\"response\": \"Fail\"}"
 
+@app.route('/get_status')
+def get_status():
+    if request.method == 'GET':
+        lsr = FakeLSR_comm()
+        lsr.ask_for_status()
+        data = {}
+        data["temp"] = lsr.temp
+        data["connected"] = True
+        return data
+    else:
+        return "{\"response\": \"Fail\"}"
+
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
