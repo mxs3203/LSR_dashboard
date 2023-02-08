@@ -1,19 +1,23 @@
 import json
 import os
-import re
 import shutil
 
-import matplotlib.pyplot as plt
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 import sqlite3
 
 from werkzeug.utils import secure_filename
 
-from LSR.FakeLSR_Comm import FakeLSR_comm
+import admin
+
 from LSR.GeneticAlg import GeneticAlg
+from LSR.LSR_comm import LSR_comm
 from LSR.utils import readAndCurateCurve, findLSRTenNumberRange, computeRange
 
 
+if not admin.isUserAdmin():
+    admin.runAsAdmin()
+
+device_port = "COM4"
 app = Flask(__name__)
 
 @app.route('/')
@@ -36,18 +40,18 @@ def figure():
         figurePath = request.args.get('figure')
         return render_template('figure.html', figurePath=figurePath)
     else:
-        return "{\"response\": \"Fail\"}"
+        return "{}", 404
 @app.route('/create', methods=('GET', 'POST'))
 def create():
 
     if request.method == 'POST':
-
         name = request.form['name']
         temp = request.form['current_temp']
         ref_curve = request.form['ref_curve']
         lsr_params = request.form['lsr_params']
         f = open('tmp/solution.json')
         data = json.load(f)
+        f.close()
         fitness = data['fitness']
         mse = 1.0/fitness
         new_figure_name = "static/Figures/{}.png".format(checkNameForFigure())
@@ -66,7 +70,7 @@ def create():
 
 def checkNameForFigure():
     figures = os.listdir("static/Figures")
-    print(figures)
+    #print(figures)
     if len(figures) == 0:
         return 1
     else:
@@ -84,6 +88,8 @@ def clearTmp():
         os.remove("tmp/ref.IRR")
     if os.path.isfile("tmp/fig.png"):
         os.remove("tmp/fig.png")
+    if os.path.isfile("tmp/recreated.IRR"):
+        os.remove("tmp/recreated.IRR")
 @app.route('/set_lsr_temp')
 def set_lsr_temp():
     if request.method == 'GET':
@@ -91,24 +97,24 @@ def set_lsr_temp():
         value = request.args.get('value')
         print(task, value)
 
-        lsr = FakeLSR_comm()
+        lsr = LSR_comm(device_port)
         lsr.set_block_temp(value)
         lsr.run()
 
-        return "{\"response\": \"Success\"}"
+        return "{}", 200
     else:
-        return "{\"response\": \"Fail\"}"
+        return "{}", 205
 
 @app.route('/abort_lsr')
 def abort_lsr():
     if request.method == 'GET':
 
-        lsr = FakeLSR_comm()
+        lsr = LSR_comm(device_port)
         lsr.stop()
 
-        return "{\"response\": \"Success\"}"
+        return "{}", 200
     else:
-        return "{\"response\": \"Fail\"}"
+        return "{}", 205
 
 @app.route('/findCurve',methods=['POST'])
 def findCurve():
@@ -123,36 +129,37 @@ def findCurve():
         ga = GeneticAlg(init_range_low, init_range_high, ten_num_range)
         ga.run()
 
-        return "{\"response\": \"Success\"}"
+        return "{}", 200
     else:
-        return "{\"response\": \"Fail\"}"
+        return "", 205
 
 @app.route('/get_current_solution')
 def get_current_solution():
     if request.method == 'GET' and os.path.isfile("tmp/solution.json"):
         f = open('tmp/solution.json')
         data = json.load(f)
-
-        lsr = FakeLSR_comm()
-        lsr.ask_for_status()
-        data["temp"] = lsr.temp
-        return data
+        return data, 200
     else:
-        return "{\"response\": \"Fail\"}"
+        return "",204
 
 @app.route('/get_status')
 def get_status():
     if request.method == 'GET':
-        lsr = FakeLSR_comm()
+        lsr = LSR_comm(device_port)
         lsr.ask_for_status()
         data = {}
         data["temp"] = lsr.temp
         data["connected"] = True
-        return data
+        return data, 200
     else:
-        return "{\"response\": \"Fail\"}"
+        return "", 404
 
 def get_db_connection():
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+if __name__ == "__main__":
+    clearTmp()
+    app.debug = True
+    app.run()

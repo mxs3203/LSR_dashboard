@@ -1,7 +1,7 @@
+import random
 import time
 
 import serial
-
 
 class LSR_comm:
 
@@ -9,19 +9,23 @@ class LSR_comm:
         self.S = serial.Serial(com_port, timeout=.1, baudrate=1000000)
         self.columns_with_data = []
         self.column_1 = []
-        time.sleep(0.5)
+        self.temp = random.randint(20,30)
 
     def send_any_command(self, msg):
-        print("Sent: ",bytes(msg, 'utf-8'))
+        #print("Sent: ",bytes(msg, 'utf-8'))
         self.S.write(bytes(msg, 'utf-8'))
         time.sleep(0.005)
         response = self.S.readlines()
-        print("\t LSR reponsed: ", response)
+        #print("\t LSR reponsed: ", response)
 
     def ask_for_status(self):
         msg = "{\"DO\":\"status\"}"
         self.send_any_command(msg)
 
+    def get_current_tmp(self):
+        msg = "{\"DO\":\"status\"}"
+        self.send_any_command(msg)
+        return random.randint(20,30)
     def set_column_data(self, column, list_of_nums, coef=1):
 
         if len(list_of_nums) == 10:

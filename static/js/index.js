@@ -1,5 +1,6 @@
 var refCurveFile = null;
 var not_done = true;
+var statusNeeded = true;
 var nm = null;
 var recon_curve = null;
 var ref_curve = null;
@@ -36,25 +37,27 @@ function openFigure(element){
 }
 
 function getStatus(){
-
-    $.ajax({
-          url: '/get_status',
-          type: 'GET',
-          async: false,
-          success: function(data){
-            data = $.parseJSON(JSON.stringify(data));
-            console.log(data)
-            if(data['connected']){
-                $('#connected').show();
-                $('#disconnected').hide();
-                $('input[name=current_temp]').val(data['temp'] + "℃");
-            }
-          },
-          complete:function(data){
-            setTimeout(getStatus,4000);
-
-          }
-         });
+    if(statusNeeded){
+        $.ajax({
+              url: '/get_status',
+              type: 'GET',
+              async: false,
+              success: function(data){
+                data = $.parseJSON(JSON.stringify(data));
+                console.log(data)
+                if(data['connected']){
+                    $('#connected').show();
+                    $('#disconnected').hide();
+                    $('input[name=current_temp]').val(data['temp'] + "℃");
+                }
+              },
+              complete:function(data){
+                if(statusNeeded){
+                     setTimeout(getStatus,5000);
+                }
+              }
+             });
+    }
 }
 
 
@@ -82,7 +85,7 @@ $( "#setTemp" ).click(function() {
 
 
 $( "#findCurve" ).click(function() {
-
+        statusNeeded = false;
         not_done = true
         var formData = new FormData();
         formData.append('file',refCurveFile)
@@ -94,7 +97,7 @@ $( "#findCurve" ).click(function() {
             $('#progressBar').show();
             setTimeout(function() {
                 get_ga_results();
-            }, 3000);
+            }, 5000);
 
             $.ajax({
                 url: "/findCurve",
@@ -104,7 +107,6 @@ $( "#findCurve" ).click(function() {
                 processData: false,
                 contentType: false,
                 success: function (data) {
-
                 },
                 complete: function(){
                     not_done = false
@@ -112,6 +114,7 @@ $( "#findCurve" ).click(function() {
                     $('.loaderText').hide();
                     $(':button').prop('disabled', false);
                     $('#progressBar').hide();
+                    statusNeeded = true;
                 },
                 error: function () {
                     console.log("Something went wrong");
@@ -126,21 +129,32 @@ $( "#findCurve" ).click(function() {
 
 
 function get_ga_results(){
+    statusNeeded = false;
     $.ajax({
       url: '/get_current_solution',
       type: 'GET',
       async: false,
-      success: function(data){
-        data = $.parseJSON(JSON.stringify(data));
-        $('input[name=lsr_params]').val(data["solution"]);
-        ref_curve = data['ref_curve'];
-        recon_curve = data['reconstruced_curve'];
-        nm = data['nm'];
-        $('#fitness_val').text(data['fitness'].toFixed(4));
-        $('#generation_val').text(data['generation']);
-        $('input[name=current_temp]').val(data['temp'] + "℃");
-        makeplots();
-        progress((data['generation']/MAX_GEN * 100));
+      success: function(data, textStatus, xhr){
+      console.log(xhr.status)
+        if (xhr.status == "200"){
+            data = $.parseJSON(JSON.stringify(data));
+            console.log(textStatus);
+            $('input[name=lsr_params]').val(data["solution"]);
+            ref_curve = data['ref_curve'];
+            recon_curve = data['reconstruced_curve'];
+            nm = data['nm'];
+            $('#fitness_val').text(data['fitness'].toFixed(4));
+            $('#generation_val').text(data['generation']);
+            $('input[name=current_temp]').val(data['temp'] + "℃");
+            makeplots();
+            progress((data['generation']/MAX_GEN * 100));
+            if(data['generation'] == MAX_GEN){
+                statusNeeded = true;
+                getStatus();
+            }
+        } else if(xhr.status == "204"){
+            console.log("Solution not ready yeat")
+        }
       },
       complete:function(data){
        if (not_done){

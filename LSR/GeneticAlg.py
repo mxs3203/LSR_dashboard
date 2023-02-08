@@ -4,6 +4,9 @@ import time
 
 import numpy as np
 from matplotlib import pyplot as plt
+import pandas as pd
+import admin
+
 plt.switch_backend('Agg')
 from pygad import pygad
 
@@ -13,8 +16,7 @@ from LSR.SpectraWizSaver import save_curve
 #from LSR.SpectraWizSaver import save_curve
 from LSR.utils import scale_curve, readAndCurateCurve, generate_random
 
-
-def make_plot(fitness, ten_nums, recon_curve, ref_curve, nm):
+def make_plot(ten_nums, recon_curve, ref_curve, nm):
     plt.plot(nm, recon_curve)
     plt.plot(nm, ref_curve)
     plt.legend(['Recreated by {} gen'.format(10), 'Ref Curve'])
@@ -23,20 +25,22 @@ def make_plot(fitness, ten_nums, recon_curve, ref_curve, nm):
 
 
 def on_generation(ga_instance):
+    print("ON GENERATION")
     with open('tmp/solution_curve.json') as json_file:
         recon_curve = json.load(json_file)
         json_file.close()
     ref_curve, _ = readAndCurateCurve("tmp/ref.IRR")
     # print(recon_curve)
-    # print("\t\tGeneration : ", ga_instance.generations_completed)
-    # print("\t\tFitness of the best solution :", ga_instance.best_solution()[1])
-    # print("\t\tTen Nums:", ga_instance.best_solution()[0])
+    print("\t\tGeneration : ", ga_instance.generations_completed)
+    print("\t\tFitness of the best solution :", ga_instance.best_solution()[1])
+    print("\t\tTen Nums:", ga_instance.best_solution()[0])
     solution_json = {"generation": ga_instance.generations_completed,
                      "fitness": ga_instance.best_solution()[1],
                      "solution": ga_instance.best_solution()[0].tolist(),
-                     "reconstruced_curve": recon_curve,
+                     "reconstruced_curve": recon_curve[0],
                      "ref_curve": ref_curve['value'].values.tolist(),
-                     "nm": ref_curve['nm'].values.tolist()
+                     "nm": ref_curve['nm'].values.tolist(),
+                     "temp": recon_curve[1]
                      }
     solution_json = json.dumps(solution_json)
     with open("tmp/solution.json", "w") as outfile:
@@ -44,8 +48,7 @@ def on_generation(ga_instance):
         outfile.close()
 
     if ga_instance.generations_completed == 10:
-        make_plot(ga_instance.best_solution()[1], ga_instance.best_solution()[0], recon_curve, ref_curve['value'].values.tolist(), ref_curve['nm'].values.tolist())
-    time.sleep(1)
+        make_plot(ga_instance.best_solution()[0], recon_curve[0], ref_curve['value'].values.tolist(), ref_curve['nm'].values.tolist())
 
 
 class GeneticAlg:
@@ -66,7 +69,7 @@ class GeneticAlg:
         self.function_inputs = generate_random(int(init_range_high))
         self.ga_instance = pygad.GA(num_generations=self.num_generations,
                                     num_parents_mating=self.num_parents_mating,
-                                    fitness_func=fitness_func_offline,
+                                    fitness_func=fitness_func_online,
                                     sol_per_pop=self.sol_per_pop,
                                     num_genes=self.num_genes,
                                     gene_type=int,
@@ -110,7 +113,7 @@ def fitness_func_offline(solution, soulution_idx):
 
 def fitness_func_online(solution, soulution_idx):
     solution = [int(ele) for ele in solution]
-    lsr = LSR_comm("COM3")
+    lsr = LSR_comm("COM4")
     # Start LSR with params
     lsr.set_column_data(1, solution)
     lsr.set_column_data(2, lsr.compute_column_based_on_first(0.7))
@@ -118,25 +121,30 @@ def fitness_func_online(solution, soulution_idx):
     lsr.set_column_data(4, lsr.compute_column_based_on_first(0.3))
     lsr.run()
 
+    temp = lsr.get_current_tmp()
+
     # Spectra has to point to example_database folder before starting
-    save_curve("{}".format("tmp/recreated.ssm"))
+    save_curve("{}".format("recreated.IRR"))
     print("Waiting for recreated file to be saved...")
-    time.sleep(0.5)
-    while not os.path.exists("tmp/{}".format("recreated.ssm")):
+
+    while not os.path.exists("tmp/{}".format("recreated.IRR")):
         time.sleep(1)
 
     print("\t Reading new HyperOCR data...")
     # Read HYperOCR (Current Curve)
-    sensor_reading, _ = readAndCurateCurve("tmp/recreated.ssm")
+    sensor_reading, _ = readAndCurateCurve("tmp/recreated.IRR")
+
+    sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
+    sensor_reading_json = sensor_reading['value'].values.tolist()
+    sensor_reading_json = json.dumps([sensor_reading_json,temp])
+    with open("tmp/solution_curve.json", "w") as outfile:
+        outfile.write(sensor_reading_json)
+        outfile.close()
 
     desired_output, _ = readAndCurateCurve("tmp/ref.IRR")
-    # sensor_reading = np.random.randint(65000, size=201)
-
     mse = (np.abs(scale_curve(desired_output['value'].values) - scale_curve(sensor_reading['value'].values))).mean(axis=0)
     print("MSE= ", mse)
     print("Fitness: ", 1.0 / mse)
     return 1.0 / mse
-
-
 
 
