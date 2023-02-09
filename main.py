@@ -138,6 +138,12 @@ def get_current_solution():
     if request.method == 'GET' and os.path.isfile("tmp/solution.json"):
         f = open('tmp/solution.json')
         data = json.load(f)
+        f.close()
+        f = open('tmp/solution_curve.json')
+        extra_data = json.load(f)
+        data['temp'] = extra_data[1]
+        data['current_process'] = extra_data[2]
+        data['tec_status'] = extra_data[3]
         return data, 200
     else:
         return "",204
@@ -148,7 +154,9 @@ def get_status():
         lsr = LSR_comm(device_port)
         lsr.ask_for_status()
         data = {}
-        data["temp"] = lsr.temp
+        data["temp"] = lsr.block_temp
+        data["current_process"] = lsr.current_process
+        data["tec_status"] = lsr.tec_status
         data["connected"] = True
         return data, 200
     else:

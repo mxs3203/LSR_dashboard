@@ -9,7 +9,10 @@ class LSR_comm:
         self.S = serial.Serial(com_port, timeout=.1, baudrate=1000000)
         self.columns_with_data = []
         self.column_1 = []
-        self.temp = random.randint(20, 30)
+        self.set_temp = -1
+        self.block_temp = -1
+        self.current_process = ""
+        self.tec_status = ""
         time.sleep(0.5)
 
     def send_any_command(self, msg):
@@ -17,16 +20,20 @@ class LSR_comm:
         self.S.write(bytes(msg, 'utf-8'))
         time.sleep(0.005)
         response = self.S.readlines()
-        #print("\t LSR reponsed: ", response)
+        print("\t LSR reponsed: ", response)
+        return response
 
     def ask_for_status(self):
         msg = "{\"DO\":\"status\"}"
-        self.send_any_command(msg)
+        self.parseStatus(self.send_any_command(msg))
 
-    def get_current_tmp(self):
-        msg = "{\"DO\":\"status\"}"
-        #self.send_any_command(msg)
-        return random.randint(20, 30)
+    def parseStatus(self, responseFromLSR):
+        self.current_process = responseFromLSR[1].decode("utf-8").split(":")[1].strip()
+        self.tec_status = responseFromLSR[2].decode("utf-8").split(":")[1].strip()
+        self.set_temp = responseFromLSR[3].decode("utf-8").split("=")[1].strip()
+        self.block_temp = responseFromLSR[4].decode("utf-8").split("=")[1].strip()
+        print(self.current_process, self.tec_status, self.set_temp, self.block_temp)
+        pass
 
     def set_column_data(self, column, list_of_nums, coef=1):
 

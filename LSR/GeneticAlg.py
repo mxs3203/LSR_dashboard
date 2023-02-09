@@ -40,7 +40,9 @@ def on_generation(ga_instance):
                      "reconstruced_curve": recon_curve[0],
                      "ref_curve": ref_curve['value'].values.tolist(),
                      "nm": ref_curve['nm'].values.tolist(),
-                     "temp": recon_curve[1]
+                     "temp": recon_curve[1],
+                     "current_process": recon_curve[2],
+                     "tec_status": recon_curve[3]
                      }
     solution_json = json.dumps(solution_json)
     with open("tmp/solution.json", "w") as outfile:
@@ -121,14 +123,17 @@ def fitness_func_online(solution, soulution_idx):
     lsr.set_column_data(4, lsr.compute_column_based_on_first(0.3))
     lsr.run()
 
-    temp = 2#lsr.get_current_tmp()
+    lsr.ask_for_status()
+    temp = lsr.block_temp
+    current_process = lsr.current_process
+    tec_status = lsr.tec_status
 
     # Spectra has to point to example_database folder before starting
     save_curve("{}".format("recreated.IRR"))
     print("Waiting for recreated file to be saved...")
 
     while not os.path.exists("tmp/{}".format("recreated.IRR")):
-        time.sleep(1)
+        time.sleep(0.2)
 
     print("\t Reading new HyperOCR data...")
     # Read HYperOCR (Current Curve)
@@ -136,7 +141,7 @@ def fitness_func_online(solution, soulution_idx):
 
     #sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
     sensor_reading_json = sensor_reading['value'].values.tolist()
-    sensor_reading_json = json.dumps([sensor_reading_json,temp])
+    sensor_reading_json = json.dumps([sensor_reading_json, temp, current_process, tec_status])
     with open("tmp/solution_curve.json", "w") as outfile:
         outfile.write(sensor_reading_json)
         outfile.close()
