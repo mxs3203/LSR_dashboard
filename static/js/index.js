@@ -146,6 +146,7 @@ function get_ga_results(){
             $('#fitness_val').text(data['fitness'].toFixed(4));
             $('#generation_val').text(data['generation']);
             $('input[name=current_temp]').val(data['temp'] + "℃");
+            console.log(data)
             makeplots();
             progress((data['generation']/MAX_GEN * 100));
             if(data['generation'] == MAX_GEN){
