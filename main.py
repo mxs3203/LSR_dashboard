@@ -17,7 +17,7 @@ from LSR.utils import readAndCurateCurve, findLSRTenNumberRange, computeRange
 if not admin.isUserAdmin():
     admin.runAsAdmin()
 
-device_port = "COM4"
+device_port = "COM3"
 app = Flask(__name__)
 
 @app.route('/')

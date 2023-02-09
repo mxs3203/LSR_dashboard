@@ -113,7 +113,7 @@ def fitness_func_offline(solution, soulution_idx):
 
 def fitness_func_online(solution, soulution_idx):
     solution = [int(ele) for ele in solution]
-    lsr = LSR_comm("COM4")
+    lsr = LSR_comm("COM3")
     # Start LSR with params
     lsr.set_column_data(1, solution)
     lsr.set_column_data(2, lsr.compute_column_based_on_first(0.7))
@@ -121,7 +121,7 @@ def fitness_func_online(solution, soulution_idx):
     lsr.set_column_data(4, lsr.compute_column_based_on_first(0.3))
     lsr.run()
 
-    temp = lsr.get_current_tmp()
+    temp = 2#lsr.get_current_tmp()
 
     # Spectra has to point to example_database folder before starting
     save_curve("{}".format("recreated.IRR"))
@@ -134,7 +134,7 @@ def fitness_func_online(solution, soulution_idx):
     # Read HYperOCR (Current Curve)
     sensor_reading, _ = readAndCurateCurve("tmp/recreated.IRR")
 
-    sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
+    #sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
     sensor_reading_json = sensor_reading['value'].values.tolist()
     sensor_reading_json = json.dumps([sensor_reading_json,temp])
     with open("tmp/solution_curve.json", "w") as outfile:

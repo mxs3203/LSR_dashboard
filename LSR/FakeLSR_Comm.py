@@ -1,32 +1,25 @@
 import random
 import time
 
-import serial
 
-class LSR_comm:
+class FakeLSR_comm:
 
-    def __init__(self, com_port):
-        self.S = serial.Serial(com_port, timeout=.1, baudrate=1000000)
+    def __init__(self):
         self.columns_with_data = []
         self.column_1 = []
-        self.temp = random.randint(20, 30)
+        self.temp = -1
         time.sleep(0.5)
 
     def send_any_command(self, msg):
         print("Sent: ",bytes(msg, 'utf-8'))
-        self.S.write(bytes(msg, 'utf-8'))
         time.sleep(0.005)
-        response = self.S.readlines()
-        #print("\t LSR reponsed: ", response)
+
+        print("\t LSR reponsed: ")
 
     def ask_for_status(self):
         msg = "{\"DO\":\"status\"}"
+        self.temp = random.randint(20,28)
         self.send_any_command(msg)
-
-    def get_current_tmp(self):
-        msg = "{\"DO\":\"status\"}"
-        #self.send_any_command(msg)
-        return random.randint(20, 30)
 
     def set_column_data(self, column, list_of_nums, coef=1):
 
@@ -70,6 +63,3 @@ class LSR_comm:
         msg = "{\"DO\": \"stop\"}"
         self.send_any_command(msg)
 
-
-# lsr = LSR_comm("COM3")
-# lsr.stop()
