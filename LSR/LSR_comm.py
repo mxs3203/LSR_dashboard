@@ -1,4 +1,3 @@
-import random
 import time
 
 import serial
@@ -16,7 +15,7 @@ class LSR_comm:
         time.sleep(0.5)
 
     def send_any_command(self, msg):
-        print("Sent: ",bytes(msg, 'utf-8'))
+        print("\tSent: ",bytes(msg, 'utf-8'))
         self.S.write(bytes(msg, 'utf-8'))
         time.sleep(0.005)
         response = self.S.readlines()
@@ -33,7 +32,6 @@ class LSR_comm:
         self.set_temp = responseFromLSR[3].decode("utf-8").split("=")[1].strip()
         self.block_temp = responseFromLSR[4].decode("utf-8").split("=")[1].strip()
         print(self.current_process, self.tec_status, self.set_temp, self.block_temp)
-        pass
 
     def set_column_data(self, column, list_of_nums, coef=1):
 
@@ -63,10 +61,11 @@ class LSR_comm:
 
     def set_block_temp(self, temp):
         msg  = "{\"DATA\":{" + "\"Tblock\": {}".format(temp) + "}}"
+        print(msg)
         self.send_any_command(msg)
 
     def run(self):
-        if 1 in self.columns_with_data and 2 in self.columns_with_data and 3 in self.columns_with_data and 4 in self.columns_with_data:
+        if (self.block_temp != -1) or (1 in self.columns_with_data and 2 in self.columns_with_data and 3 in self.columns_with_data and 4 in self.columns_with_data):
             msg = "{\"DO\": \"run\"}"
             self.send_any_command(msg)
             self.columns_with_data = []
@@ -76,7 +75,3 @@ class LSR_comm:
     def stop(self):
         msg = "{\"DO\": \"stop\"}"
         self.send_any_command(msg)
-
-
-# lsr = LSR_comm("COM3")
-# lsr.stop()

@@ -4,16 +4,10 @@ import time
 
 import numpy as np
 from matplotlib import pyplot as plt
-import pandas as pd
-import admin
-
 plt.switch_backend('Agg')
 from pygad import pygad
 
-from LSR.LSR_comm import LSR_comm
 from LSR.SpectraWizSaver import save_curve
-#from LSR.LSR_comm import LSR_comm
-#from LSR.SpectraWizSaver import save_curve
 from LSR.utils import scale_curve, readAndCurateCurve, generate_random
 
 def make_plot(ten_nums, recon_curve, ref_curve, nm):
@@ -115,8 +109,9 @@ def fitness_func_offline(solution, soulution_idx):
 
 def fitness_func_online(solution, soulution_idx):
     solution = [int(ele) for ele in solution]
-    lsr = LSR_comm("COM3")
+    #lsr = LSR_comm("COM3")
     # Start LSR with params
+    from main import lsr as lsr
     lsr.set_column_data(1, solution)
     lsr.set_column_data(2, lsr.compute_column_based_on_first(0.7))
     lsr.set_column_data(3, lsr.compute_column_based_on_first(0.5))
