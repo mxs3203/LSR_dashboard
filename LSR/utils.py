@@ -29,8 +29,9 @@ def processFile(file, EPS=0.0001):
     curve = curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
     curve = curve.groupby(np.arange(len(curve)) // 5).agg({"nm": 'mean', 'value': 'mean'})
     curve[curve < 0] = 0
+    lsr_peaks = findLSRPeaks(curve)
     log10_curve = np.log10(curve['value'] + EPS)
-    return curve, log10_curve
+    return curve, log10_curve, lsr_peaks
 
 
 def findOptimalNumberForSplit(diff):
@@ -62,8 +63,8 @@ def computeRange(ten_num_range_):
     for i in range(0, 10):
         if lcb[i] < 0:
             lcb[i] = 0
-        if ucb[i] > 200:
-            ucb[i] = 200
+        if ucb[i] > 300:
+            ucb[i] = 300
         if lcb[i] < my_min:
             my_min = lcb[i]
         if ucb[i] > my_max:
@@ -75,18 +76,42 @@ def computeRange(ten_num_range_):
     return total, my_min, my_max
 
 
-def findLSRTenNumberRange(log_10_curve):
+def findLSRTenNumberRange(log_10_curve, ref_auc):
     device = "cpu"
-    model = Predict10(curve_size=161)
+    curve_size = 11
+    model = Predict10(curve_size=curve_size)
     model.to(device)
-    model.load_state_dict(torch.load("LSR/best_model.pth"))
+    model.load_state_dict(torch.load("LSR/best_model_11nums.pth"))
     model.eval()
+
+    if ref_auc < 1:
+        sd = 1
+    elif ref_auc >= 1 and ref_auc < 5:
+        sd = 5
+    elif ref_auc >= 5 and ref_auc < 20:
+        sd = 10
+    else:
+        sd = 15
 
     solutions = []
     for i in range(0, 1000):
-        sampl = np.random.uniform(low=-1, high=1, size=(161,))
-        noisy = np.array(log_10_curve + sampl, dtype="float")
+        noisy = np.array([np.random.normal(i,sd ) for i in log_10_curve], dtype="float")
         predicted_ten_nums = model(torch.FloatTensor(noisy))
         predicted_ten_nums = [int(10 ** (item - 0.0001)) for item in predicted_ten_nums]
         solutions.append(predicted_ten_nums)
     return pd.DataFrame(solutions)
+
+def findLSRPeaks(curve_df):
+    first = curve_df.loc[(curve_df['nm'] >= 363) & (curve_df['nm'] <= 376), 'value'].mean()
+    second = curve_df.loc[(curve_df['nm'] >= 383) & (curve_df['nm'] <= 396), 'value'].mean()
+    third = curve_df.loc[(curve_df['nm'] >= 456) & (curve_df['nm'] <= 468), 'value'].mean()
+    fourth = curve_df.loc[(curve_df['nm'] >= 436) & (curve_df['nm'] <= 446), 'value'].mean()
+    fifth = curve_df.loc[(curve_df['nm'] >= 516) & (curve_df['nm'] <= 536), 'value'].mean()
+    six = curve_df.loc[(curve_df['nm'] >= 441) & (curve_df['nm'] <= 448), 'value'].mean()
+    six2 = curve_df.loc[(curve_df['nm'] >= 568) & (curve_df['nm'] <= 638), 'value'].mean()
+    seven = curve_df.loc[(curve_df['nm'] >= 591) & (curve_df['nm'] <= 596), 'value'].mean()
+    eight = curve_df.loc[(curve_df['nm'] >= 626) & (curve_df['nm'] <= 631), 'value'].mean()
+    nine = curve_df.loc[(curve_df['nm'] >= 653) & (curve_df['nm'] <= 661), 'value'].mean()
+    ten = curve_df.loc[(curve_df['nm'] >= 728) & (curve_df['nm'] <= 741), 'value'].mean()
+    return np.array([first,second, third,fourth, fifth, six, six2,seven,eight,nine,ten])
+

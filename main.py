@@ -9,6 +9,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for, jso
 import sqlite3
 
 from matplotlib import pyplot as plt
+from numpy import trapz
 
 import admin
 
@@ -38,7 +39,7 @@ def on_generation(ga_instance):
     with open('tmp/solution_curve.json') as json_file:
         recon_curve = json.load(json_file)
         json_file.close()
-    ref_curve, _ = readAndCurateCurve("tmp/ref.IRR")
+    ref_curve, log10_curve, lsr_peaks = readAndCurateCurve("tmp/ref.IRR")
     # print(recon_curve)
     print("\t\tGeneration : ", ga_instance.generations_completed)
     print("\t\tFitness of the best solution :", ga_instance.best_solution()[1])
@@ -69,11 +70,17 @@ def fitness_func_offline(solution, soulution_idx):
         outfile.write(sensor_reading_json)
         outfile.close()
 
-    desired_output, _ = readAndCurateCurve("tmp/ref.IRR")
+
+    desired_output, log10_curve,lsr_peaks = readAndCurateCurve("tmp/ref.IRR")
     mse = (np.abs(scale_curve(desired_output['value'].values) - scale_curve(sensor_reading))).mean(axis=0)
     print("MSE= ", mse)
-    print("Fitness: ", 1.0 / mse)
-    return 1.0 / mse
+    auc_ref = trapz(scale_curve(desired_output['value'].values), dx=5)
+    auc_recon = trapz(scale_curve(sensor_reading), dx=5)
+    print("Area Ref: ",auc_ref, " Area Recon: ", auc_recon)
+    print ("Diff in Area: ", np.abs(auc_ref-auc_recon))
+    fitness = (1.0/mse) + (1.0/np.abs(auc_ref-auc_recon))
+    print("Fitness: ", fitness)
+    return fitness
 
 def fitness_func_online(solution, soulution_idx):
     solution = [int(ele) for ele in solution]
@@ -99,7 +106,7 @@ def fitness_func_online(solution, soulution_idx):
 
     print("\t Reading new HyperOCR data...")
     # Read HYperOCR (Current Curve)
-    sensor_reading, _ = readAndCurateCurve("tmp/recreated.IRR")
+    sensor_reading, log10_curve, lsr_peaks = readAndCurateCurve("tmp/recreated.IRR")
 
     #sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
     sensor_reading_json = sensor_reading['value'].values.tolist()
@@ -108,10 +115,15 @@ def fitness_func_online(solution, soulution_idx):
         outfile.write(sensor_reading_json)
         outfile.close()
 
-    desired_output, _ = readAndCurateCurve("tmp/ref.IRR")
+    desired_output, log10_curve, lsr_peaks = readAndCurateCurve("tmp/ref.IRR")
     mse = (np.abs(scale_curve(desired_output['value'].values) - scale_curve(sensor_reading['value'].values))).mean(axis=0)
     print("MSE= ", mse)
-    print("Fitness: ", 1.0 / mse)
+    auc_ref = trapz(scale_curve(desired_output['value'].values), dx=1)
+    auc_recon = trapz(scale_curve(sensor_reading['value'].values), dx=1)
+    print("Area Ref: ", auc_ref, " Area Recon: ", auc_recon)
+    print("Diff in Area: ", np.abs(auc_ref - auc_recon))
+    fitness = (1.0 / mse) + (1.0 / np.abs(auc_ref - auc_recon))
+    print("Fitness: ", fitness)
     return 1.0 / mse
 
 class GeneticAlg:
@@ -125,7 +137,7 @@ class GeneticAlg:
         self.keep_parents = 2
         self.crossover_type = "scattered"
         self.mutation_type = "random"
-        self.mutation_percent_genes = 20
+        self.mutation_percent_genes = 30
         self.init_range_low = init_range_low
         self.init_range_high = init_range_high
         self.gene_space = gene_space
@@ -259,11 +271,12 @@ def findCurve():
 
         f = request.files['file']
         f.save("tmp/ref.IRR")
-        curve, log10curve = readAndCurateCurve("tmp/ref.IRR")
-        simulated_range = findLSRTenNumberRange(log10curve)
+        curve, log10curve, lsr_peaks = readAndCurateCurve("tmp/ref.IRR")
+        ref_auc = trapz(scale_curve(curve['value'].values), dx=1)
+        simulated_range = findLSRTenNumberRange(lsr_peaks, ref_auc)
         ten_num_range, init_range_low, init_range_high = computeRange(simulated_range)
-        #print(ten_num_range, init_range_low, init_range_high)
-
+        print(ten_num_range, init_range_low, init_range_high)
+        print(ref_auc)
         ga = GeneticAlg(init_range_low, init_range_high, ten_num_range)
         ga.run()
 

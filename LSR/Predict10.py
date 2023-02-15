@@ -6,19 +6,20 @@ class Predict10(torch.nn.Module):
         super().__init__()
 
         self.decoder = torch.nn.Sequential(
-            torch.nn.Linear(curve_size, 128),
+            torch.nn.Linear(curve_size, 64),
             torch.nn.ReLU(),
-            torch.nn.Dropout(0.2),
-            torch.nn.Linear(128, 128),
+            torch.nn.Dropout(0.19),
+            torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Dropout(0.2),
-            torch.nn.Linear(128, 128),
+            torch.nn.Dropout(0.19),
+            torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Dropout(0.2),
-            torch.nn.Linear(128, 128),
+            torch.nn.Dropout(0.19),
+            torch.nn.Linear(64, 64),
             torch.nn.ReLU(),
-            torch.nn.Linear(128, 10)
+            torch.nn.Linear(64, 10)
         )
 
     def forward(self, x):
         return self.decoder(x)
+
