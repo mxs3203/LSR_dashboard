@@ -20,14 +20,15 @@ from LSR.Predict10 import Predict10
 def generate_random(max):
     return np.array(random.sample(range(0, max), 10), dtype="int")
 
-def readAndCurateCurve(file):
+def readAndCurateCurve(file, sensor='other'):
     with open(file, 'rb') as f2:
-         return processFile(f2)
+         return processFile(f2,sensor=sensor)
 
-def processFile(file, EPS=0.0001):
+def processFile(file, EPS=0.0001, sensor='other'):
     curve = pd.read_csv(file, delimiter=" ", skiprows=1, names=['nm', 'ignore', 'value'])
-    curve = curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
-    curve = curve.groupby(np.arange(len(curve)) // 5).agg({"nm": 'mean', 'value': 'mean'})
+    curve = curve[curve['nm'].between(350, 750)]#curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
+    if sensor == 'apogee':
+        curve = curve.groupby(np.arange(len(curve)) // 5).agg({"nm": 'mean', 'value': 'mean'})
     curve[curve < 0] = 0
     lsr_peaks = findLSRPeaks(curve)
     log10_curve = np.log10(curve['value'] + EPS)
@@ -53,7 +54,7 @@ def computeRange(ten_num_range_):
     m = ten_num_range_.mean()
     sd = ten_num_range_.std()
     n = len(ten_num_range_)
-    Zstar = 1.96
+    Zstar = 2.56
     lcb = m - Zstar * sd
     ucb = m + Zstar * sd
 
@@ -63,8 +64,8 @@ def computeRange(ten_num_range_):
     for i in range(0, 10):
         if lcb[i] < 0:
             lcb[i] = 0
-        if ucb[i] > 300:
-            ucb[i] = 300
+        if ucb[i] > 500:
+            ucb[i] = 500
         if lcb[i] < my_min:
             my_min = lcb[i]
         if ucb[i] > my_max:
@@ -90,11 +91,15 @@ def findLSRTenNumberRange(log_10_curve, ref_auc):
         sd = 5
     elif ref_auc >= 5 and ref_auc < 20:
         sd = 10
+    elif ref_auc >= 20 and ref_auc < 40:
+        sd = 45
+    elif ref_auc >= 40 and ref_auc < 60:
+        sd = 50
     else:
-        sd = 15
+        sd = 60
 
     solutions = []
-    for i in range(0, 1000):
+    for i in range(0, 5000):
         noisy = np.array([np.random.normal(i,sd ) for i in log_10_curve], dtype="float")
         predicted_ten_nums = model(torch.FloatTensor(noisy))
         predicted_ten_nums = [int(10 ** (item - 0.0001)) for item in predicted_ten_nums]

@@ -59,7 +59,7 @@ def on_generation(ga_instance):
         outfile.write(solution_json)
         outfile.close()
 
-    if ga_instance.generations_completed == 10:
+    if ga_instance.generations_completed == 8:
         make_plot(ga_instance.best_solution()[0], recon_curve[0], ref_curve['value'].values.tolist(), ref_curve['nm'].values.tolist())
 
 def fitness_func_offline(solution, soulution_idx):
@@ -106,7 +106,7 @@ def fitness_func_online(solution, soulution_idx):
 
     print("\t Reading new HyperOCR data...")
     # Read HYperOCR (Current Curve)
-    sensor_reading, log10_curve, lsr_peaks = readAndCurateCurve("tmp/recreated.IRR")
+    sensor_reading, log10_curve, lsr_peaks = readAndCurateCurve("tmp/recreated.IRR",sensor='apogee')
 
     #sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
     sensor_reading_json = sensor_reading['value'].values.tolist()
@@ -129,7 +129,7 @@ def fitness_func_online(solution, soulution_idx):
 class GeneticAlg:
 
     def __init__(self, init_range_low, init_range_high, gene_space):
-        self.num_generations = 10
+        self.num_generations = 8
         self.num_parents_mating = 4
         self.sol_per_pop = 8
         self.num_genes = 10
