@@ -4,7 +4,7 @@ var statusNeeded = true;
 var nm = null;
 var recon_curve = null;
 var ref_curve = null;
-var MAX_GEN = 10;
+var MAX_GEN = 8;
 $('.loader').hide();
 $('.loaderText').hide();
 $('#progressBar').hide();
@@ -12,6 +12,9 @@ $('#connected').hide();
 $('#disconnected').show();
 $('#saveExperiment').prop('disabled', true);
 getStatus();
+//$('#buttonOn').hide();
+//$('#buttonOff').hide();
+
 
 function progress(how_much) {
     var elem = document.getElementById("progressBar");
@@ -59,6 +62,44 @@ function getStatus(){
              });
     }
 }
+
+$( "#buttonOn" ).click(function() {
+   $("#buttonOn").hide();
+   $("#buttonOff").show();
+
+     $.ajax({
+            url: "/turnOffOn",
+            data: {'turn': 'On'},
+            async: false,
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+            },
+            error: function () {
+                console.log("Something went wrong");
+            },
+        });
+});
+
+$( "#buttonOff" ).click(function() {
+    $("#buttonOff").hide();
+    $("#buttonOn").show();
+
+     $.ajax({
+            url: "/turnOffOn",
+            data: {'turn': 'Off'},
+            async: false,
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+            },
+            error: function () {
+                console.log("Something went wrong");
+            },
+        });
+});
 
 
 
@@ -114,6 +155,8 @@ $( "#findCurve" ).click(function() {
                     $('.loaderText').hide();
                     $(':button').prop('disabled', false);
                     $('#progressBar').hide();
+                    $('#buttonOnOff').show();
+                    $('#buttonOnOff').val = lsr;
                     statusNeeded = true;
                 },
                 error: function () {
@@ -150,6 +193,7 @@ function get_ga_results(){
             makeplots();
             progress((data['generation']/MAX_GEN * 100));
             if(data['generation'] == MAX_GEN){
+                $('#buttonOff').show();
                 statusNeeded = true;
                 getStatus();
             }
