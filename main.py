@@ -18,14 +18,15 @@ from LSR.LSR_comm import LSR_comm
 from LSR.SpectraWizSaver import save_curve
 from LSR.utils import readAndCurateCurve, findLSRTenNumberRange, computeRange, generate_random, scale_curve
 
-if not admin.isUserAdmin():
-    admin.runAsAdmin()
+# if not admin.isUserAdmin():
+#     admin.runAsAdmin()
 
 device_port = "COM3"
 app = Flask(__name__)
 lsr = LSR_comm(device_port)
 lsr.stop()
 
+BEST_SOLUTION = []
 
 def make_plot(ten_nums, recon_curve, ref_curve, nm):
     plt.plot(nm, recon_curve)
@@ -60,6 +61,7 @@ def on_generation(ga_instance):
         outfile.close()
 
     if ga_instance.generations_completed == 8:
+        BEST_SOLUTION = ga_instance.best_solution()[0]
         make_plot(ga_instance.best_solution()[0], recon_curve[0], ref_curve['value'].values.tolist(), ref_curve['nm'].values.tolist())
 
 def fitness_func_offline(solution, soulution_idx):
@@ -106,7 +108,7 @@ def fitness_func_online(solution, soulution_idx):
 
     print("\t Reading new HyperOCR data...")
     # Read HYperOCR (Current Curve)
-    sensor_reading, log10_curve, lsr_peaks = readAndCurateCurve("tmp/recreated.IRR",sensor='apogee')
+    sensor_reading, log10_curve, lsr_peaks = readAndCurateCurve("tmp/recreated.IRR", sensor='apogee')
 
     #sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
     sensor_reading_json = sensor_reading['value'].values.tolist()
@@ -327,6 +329,27 @@ def set_lsr_temp():
         return "{}", 200
     else:
         return "{}", 205
+@app.route('/turnOffOn')
+def turnOnOff():
+    if request.method == 'GET':
+        onOff = request.args.get('turn')
+        if onOff == 'Off':
+            lsr.set_column_data(1, [0,0,0,0,0,0,0,0,0,0])
+            lsr.set_column_data(2, [0,0,0,0,0,0,0,0,0,0])
+            lsr.set_column_data(3, [0,0,0,0,0,0,0,0,0,0])
+            lsr.set_column_data(4, [0,0,0,0,0,0,0,0,0,0])
+            lsr.run()
+        else:
+            lsr.set_column_data(1, BEST_SOLUTION)
+            lsr.set_column_data(2, lsr.compute_column_based_on_first(0.7))
+            lsr.set_column_data(3, lsr.compute_column_based_on_first(0.5))
+            lsr.set_column_data(4, lsr.compute_column_based_on_first(0.3))
+            lsr.run()
+
+        return "{}", 200
+    else:
+        return "{}", 205
+
 
 
 def get_db_connection():
