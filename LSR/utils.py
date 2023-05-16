@@ -26,7 +26,7 @@ def readAndCurateCurve(file, sensor='other'):
 
 def processFile(file, EPS=0.0001, sensor='other'):
     curve = pd.read_csv(file, delimiter=" ", skiprows=1, names=['nm', 'ignore', 'value'])
-    curve = curve[curve['nm'].between(350, 750)]#curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
+    curve = curve[curve['nm'].between(350, 850)]#curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
     if sensor == 'apogee':
         curve = curve.groupby(np.arange(len(curve)) // 5).agg({"nm": 'mean', 'value': 'mean'})
     curve[curve < 0] = 0
