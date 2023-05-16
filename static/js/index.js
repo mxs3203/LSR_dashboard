@@ -12,8 +12,8 @@ $('#connected').hide();
 $('#disconnected').show();
 $('#saveExperiment').prop('disabled', true);
 getStatus();
-//$('#buttonOn').hide();
-//$('#buttonOff').hide();
+$('#buttonOn').hide();
+$('#buttonOff').hide();
 
 
 function progress(how_much) {
@@ -102,7 +102,6 @@ $( "#buttonOff" ).click(function() {
 });
 
 
-
 $("#refCurveFile").on('input', function() {
    refCurveFile = this.files[0];
 });
@@ -155,8 +154,7 @@ $( "#findCurve" ).click(function() {
                     $('.loaderText').hide();
                     $(':button').prop('disabled', false);
                     $('#progressBar').hide();
-                    $('#buttonOnOff').show();
-                    $('#buttonOnOff').val = lsr;
+                    $('#buttonOff').show();
                     statusNeeded = true;
                 },
                 error: function () {
@@ -194,6 +192,8 @@ function get_ga_results(){
             progress((data['generation']/MAX_GEN * 100));
             if(data['generation'] == MAX_GEN){
                 $('#buttonOff').show();
+                $('#buttonOn').hide();
+
                 statusNeeded = true;
                 getStatus();
             }
