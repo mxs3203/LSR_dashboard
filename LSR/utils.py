@@ -26,9 +26,9 @@ def readAndCurateCurve(file, sensor='other'):
 
 def processFile(file, EPS=0.0001, sensor='other'):
     curve = pd.read_csv(file, delimiter=" ", skiprows=1, names=['nm', 'ignore', 'value'])
-    curve = curve[curve['nm'].between(350, 850)]#curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
+    curve = curve[curve['nm'].between(350, 750)]#curve.loc[(curve['nm'] >= 350) & (curve['nm'] <= 750)]
     if sensor == 'apogee':
-        curve = curve.groupby(np.arange(len(curve)) // 5).agg({"nm": 'mean', 'value': 'mean'})
+        curve = curve.groupby(np.arange(len(curve)) // 6).agg({"nm": 'mean', 'value': 'mean'})
     curve[curve < 0] = 0
     lsr_peaks = findLSRPeaks(curve)
     log10_curve = np.log10(curve['value'] + EPS)
@@ -64,8 +64,8 @@ def computeRange(ten_num_range_):
     for i in range(0, 10):
         if lcb[i] < 0:
             lcb[i] = 0
-        if ucb[i] > 500:
-            ucb[i] = 500
+        if ucb[i] > 600:
+            ucb[i] = 600
         if lcb[i] < my_min:
             my_min = lcb[i]
         if ucb[i] > my_max:
@@ -116,7 +116,7 @@ def findLSRPeaks(curve_df):
     six2 = curve_df.loc[(curve_df['nm'] >= 568) & (curve_df['nm'] <= 638), 'value'].mean()
     seven = curve_df.loc[(curve_df['nm'] >= 591) & (curve_df['nm'] <= 596), 'value'].mean()
     eight = curve_df.loc[(curve_df['nm'] >= 626) & (curve_df['nm'] <= 631), 'value'].mean()
-    nine = curve_df.loc[(curve_df['nm'] >= 653) & (curve_df['nm'] <= 661), 'value'].mean()
-    ten = curve_df.loc[(curve_df['nm'] >= 728) & (curve_df['nm'] <= 741), 'value'].mean()
+    nine = curve_df.loc[(curve_df['nm'] >= 631) & (curve_df['nm'] <= 641), 'value'].mean()
+    ten = curve_df.loc[(curve_df['nm'] >= 641) & (curve_df['nm'] <= 660), 'value'].mean()
     return np.array([first,second, third,fourth, fifth, six, six2,seven,eight,nine,ten])
 

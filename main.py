@@ -106,7 +106,7 @@ def fitness_func_online(solution, soulution_idx):
     print("\t Reading new HyperOCR data...")
     # Read HYperOCR (Current Curve)
     sensor_reading, log10_curve, lsr_peaks = readAndCurateCurve("tmp/recreated.IRR",sensor='apogee')
-
+    print("recreated_curve", np.shape(sensor_reading))
     #sensor_reading = pd.DataFrame(list(zip(np.random.randint(120, size=161),np.random.randint(120, size=161))), columns=['nm','value'])
     sensor_reading_json = sensor_reading['value'].values.tolist()
     sensor_reading_json = json.dumps([sensor_reading_json, temp, current_process, tec_status])
